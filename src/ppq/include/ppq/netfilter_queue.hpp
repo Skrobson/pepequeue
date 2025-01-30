@@ -1,11 +1,9 @@
 #pragma once
-#include <cstdint>
+#include "ppq/netfilter_queue_handle.hpp"
 
-extern "C"
-{
-#include <linux/netfilter.h>
-#include <libnetfilter_queue/libnetfilter_queue.h>
-}
+#include <cstdint>
+#include <memory>
+
 
 enum QueueCopyMode : uint8_t {
 	COPY_NONE = NFQNL_COPY_NONE,
@@ -18,7 +16,7 @@ namespace kit::ppq
     class NetfilterQueue
     {
     public:
-        NetfilterQueue();
+        NetfilterQueue() = default;
         ~NetfilterQueue();
 
         template <typename Callback>
@@ -26,13 +24,20 @@ namespace kit::ppq
         {
         }
 
+        bool binded() const
+        {
+
+        }
+
         void setMode(QueueCopyMode mode);
         void setQueueMaxLen(uint32_t queuelen);
+
     protected:
-        nfq_handle *m_handle;
-        nfq_q_handle *m_queue;
+        std::shared_ptr<NetfilterQueueHandler> handler;
 
         void setMode(QueueCopyMode mode, unsigned int packetLen);
         void setQueueFlags(uint32_t mask, uint32_t flags);
+
+        virtual int netfilterCallback(struct nfq_q_handle *queue, struct nfgenmsg *nfmsg, struct nfq_data *nfad, void *data);
     };
 }
